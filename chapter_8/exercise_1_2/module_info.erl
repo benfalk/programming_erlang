@@ -11,15 +11,35 @@
 -module(module_info).
 -export([dict_function_count/0]).
 -export([largest_exporter/0]).
+-export([function_map/0]).
+-export([most_common_function/0]).
 
 dict_function_count() ->
   function_count(dict).
 
 largest_exporter() ->
-  modules_from_tuple_list(code:all_loaded()).
+  Modules = modules_from_tuple_list(code:all_loaded()),
+  ModuleCounts = [{Module,function_count(Module)} || Module <- Modules],
+  largest_module(ModuleCounts).
+
+most_common_function() ->
+  Functions = maps:to_list(function_map()),
+  largest_module(Functions, {nil,0}).
 
 function_count(Mod) ->
   list_length(Mod:module_info(exports), 0).
+
+function_map() ->
+  Modules = modules_from_tuple_list(code:all_loaded()),
+  Functions = lists:flatten(lists:map(fun(M) -> M:module_info(exports) end, Modules)),
+  map_functions(Functions, #{}).
+
+map_functions([], Map) -> Map;
+map_functions([H|T], Map) ->
+  {Method,_} = H,
+  Count = get(Method, Map, 0),
+  map_functions(T, maps:put(Method, Count+1, Map)).
+
 
 list_length([], N) -> N;
 list_length([_|T], N) ->
@@ -36,3 +56,23 @@ modules_from_tuple_list([], L) -> L;
 modules_from_tuple_list([H|T], L) ->
   {Mod,_} = H,
   modules_from_tuple_list(T,[Mod|L]).
+
+largest_module([]) -> [];
+largest_module(L) ->
+  largest_module(L, {nil,0}).
+
+largest_module([], Result) -> Result;
+largest_module([H|T], {Mod,Size}) ->
+  {CheckMod,CheckSize} = H,
+  case CheckSize >= Size of
+    true -> largest_module(T, {CheckMod,CheckSize});
+    false -> largest_module(T, {Mod,Size})
+  end.
+
+% My implementation doesn't have default for maps :sad-trumpet:
+get(Key, Map, Default) ->
+  try maps:get(Key, Map) of
+    Val -> Val
+  catch
+    _:_ -> Default
+  end.
