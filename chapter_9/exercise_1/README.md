@@ -1,5 +1,5 @@
-Exercise One
-============
+Chapter Nine, Exercise One
+==========================
 
 Write some very small modules that export a single function. Write type
 specifications for the exported functions. In the functions make some type
