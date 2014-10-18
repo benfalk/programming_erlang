@@ -4,6 +4,7 @@
 -type age() :: integer().
 -type name() :: atom().
 -opaque person() :: {gender(), age(), name()}.
+-export_type([person/0]).
 
 -export([persons_age/1]).
 -export([new_person/3]).
