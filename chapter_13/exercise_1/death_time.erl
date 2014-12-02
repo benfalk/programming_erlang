@@ -29,7 +29,8 @@ wait_for_death() ->
 
 sillyness() ->
   receive
-    after 4000 -> void
+    die -> void
+    after 14000 -> void
   end.
 
 time_diff({StartMega, StartSec, StartMicro}, {EndMega, EndSec, EndMicro}) when EndMicro > StartMicro ->
